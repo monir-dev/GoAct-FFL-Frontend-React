@@ -1,0 +1,13 @@
+After fresh installation of react include these package
+npm i axios classnames jwt-decode react-router-dom  moment react-moment redux react-redux redux-thunk --save
+
+PreProcessor:
+https://www.youtube.com/watch?v=2QaI5ajg4Hw
+npm i node-sass-chokidar npm-run-all --save-dev
+
+scripts setting:
+"build-css": "node-sass-chokidar --include-path ./src --include-path ./node_modules/ ./src -o ./src",
+"watch-css": "npm run build-css && node-sass-chokidar  --include-path ./src --include-path ./node_modules/ ./src -o ./src --watch --recursive",
+"start-js": "react-scripts start",
+"start": "npm-run-all -p watch-css start-js",
+"build": "npm run build-css && react-scripts build",
