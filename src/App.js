@@ -77,7 +77,8 @@ class App extends Component {
             <div className="container-fluid">
               <div id="ui-view">
                 <Switch>
-                  <PrivateRoute exact path="/dashboard" component={Users} />
+                  <PrivateRoute exact path="/dashboard" component={Dashboard} />
+                  <PrivateRoute exact path="/users" component={Users} />
                 </Switch>
               </div>
             </div>

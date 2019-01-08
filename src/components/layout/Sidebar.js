@@ -9,22 +9,22 @@ class Sidebar extends Component {
         <nav className="sidebar-nav">
           <ul className="nav">
             <li className="nav-item">
-              <a className="nav-link" href="main.html">
+              <Link className="nav-link" to="/dashboard">
                 <i className="nav-icon icon-speedometer" /> Dashboard
                 <span className="badge badge-info">NEW</span>
-              </a>
+              </Link>
             </li>
 
-            <li className="nav-title">Components</li>
+            <li className="nav-title">Administration</li>
             <li className="nav-item nav-dropdown">
-              <a className="nav-link nav-dropdown-toggle" href="#">
-                <i className="nav-icon icon-puzzle" /> Base
-              </a>
+              <Link className="nav-link nav-dropdown-toggle" to="">
+                <i className="nav-icon icon-puzzle" /> Administration
+              </Link>
               <ul className="nav-dropdown-items">
                 <li className="nav-item">
-                  <a className="nav-link" href="base/breadcrumb.html">
-                    <i className="nav-icon icon-puzzle" /> Breadcrumb
-                  </a>
+                  <Link className="nav-link" to="/users">
+                    <i className="nav-icon icon-puzzle" /> Users
+                  </Link>
                 </li>
               </ul>
             </li>
