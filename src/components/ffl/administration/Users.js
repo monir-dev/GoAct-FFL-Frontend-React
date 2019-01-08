@@ -1,96 +1,74 @@
 import React, { Component } from "react";
-import { makeData } from "./Utils";
+import { connect } from "react-redux";
 import axios from "axios";
 import Spinner from "../../common/Spinner";
 import _ from "lodash";
 import * as d3 from "d3";
 import $ from "jquery";
 import swal from "@sweetalert/with-react";
+import {
+  getUsers,
+  editUserApprovalStatus,
+  deleteUser
+} from "../../../actions/usersAction";
 
 // Import React Table
 import ReactTable from "react-table";
 import "react-table/react-table.css";
-import Axios from "axios";
 
 class Users extends Component {
   constructor() {
     super();
     this.state = {
-      // data: makeData(),
-      data: [],
       modal: {
         type: null,
         id: null,
         title: null,
-        body: null,
-        button: null
+        approved: null
       }
     };
   }
 
   componentDidMount = () => {
-    axios
-      .get("/users")
-      .then(res => res.data)
-      .then(res => {
-        let data = res.map(item => {
-          return {
-            id: item.id,
-            Name: item.Name,
-            Email: item.Email,
-            StaffId: item.StaffId,
-            Desg: item.Desg,
-            ServiceGroup: item.ServiceGroup,
-            Company: item.Company,
-            Dept: item.Dept,
-            Location: item.Location,
-            Country: item.Country
-          };
-        });
-        this.setState({ data: data });
-      })
-      .catch(err => console.log(err));
+    this.props.getUsers();
   };
 
-  clickedMe = value => {
-    if (value == "submit") {
-      console.log(value);
-    }
-  };
+  componentWillReceiveProps(nextProps) {
+    // console.log(nextProps);
+  }
+
   editAction = e => {
+    const id = this.getIdOfElement(e);
+    const data = this.props.users.users.filter(item => item.id == id);
+
     this.setState({
       modal: {
-        type: null,
-        id: null,
-        title: null,
-        body: null,
-        button: null
+        type: "edit",
+        id: _.parseInt(id),
+        title: "Change Approve Status?",
+        approved: data[0].Approved
       }
     });
-    let id = this.getIdOfElement(e);
-    $("#editModal").modal("show");
 
-    console.log(id);
+    $("#editDeleteModal").modal("show");
   };
 
   deleteAction = e => {
-    console.log(e.target.id);
+    let id = this.getIdOfElement(e);
     this.setState({
       modal: {
-        isOpen: true
+        ...this.state.modal,
+        type: "delete",
+        id: _.parseInt(id),
+        title: "Are you sure want to delete?",
+        approved: null
       }
     });
-    this.toggleModal();
+    $("#editDeleteModal").modal("show");
   };
 
   getIdOfElement = e => {
-    let id;
-    if (e.target.id) {
-      id = e.target.id;
-    } else {
-      id = e.target.parentNode.id;
-    }
-    return id;
+    return e.target.id ? e.target.id : e.target.parentNode.id;
   };
 
   actionButtons = row => {
@@ -99,131 +77,156 @@ class Users extends Component {
       <div>
         <button
           className="btn btn-sm btn-outline-warning"
+          data-row={row.row}
           id={id}
           onClick={this.editAction}
         >
-          <i className="fa fa-plus">{""}</i>
-        </button>
+          <i class="fas fa-pen-fancy">{""}</i>
+        </button>{" "}
         <button
           className="btn btn-sm btn-outline-danger"
-          style={{ marginLeft: "3px" }}
+          data-row={row.row}
           id={id}
           onClick={this.deleteAction}
         >
-          <i className="fa fa-trash">{""}</i>
+          <i class="fas fa-times">{""}</i>
         </button>
       </div>
     );
   };
 
-  modalContentSweetAlert = () => {
-    // swal({
-    //   text: "Are you going to update this status?",
-    //   buttons: {
-    //     cancel: "Close",
-    //     confirm: {
-    //       text: "Submit",
-    //       value: "submit"
-    //     }
-    //   },
-    //   content: (
-    //     <div>
-    //       <div className="form-group" />
-    //     </div>
-    //   )
-    // }).then(value => this.clickedMe(value));
-    const { modalClass, type, id, title, body, button } = this.state.modal;
-    return (
-      <div
-        className="modal fade"
-        id="editModalSweetAlert"
-        tabIndex="-1"
-        role="dialog"
-        aria-labelledby="exampleModalCenterTitle"
-        aria-hidden="true"
-      >
-        <div
-          className="modal-dialog modal-dialog-centered modal-lg"
-          role="document"
-        >
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title" id="exampleModalLongTitle">
-                Modal title
-              </h5>
-              <button
-                type="button"
-                className="close"
-                data-dismiss="modal"
-                aria-label="Close"
-                onClick={this.toggleModal}
-              >
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div className="modal-body">...</div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-primary">
-                Save changes
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                data-dismiss="modal"
-                onClick={this.toggleModal}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  onChange = e => {
+    this.setState({
+      modal: {
+        ...this.state.modal,
+        [e.target.name]: e.target.value
+      }
+    });
+  };
+
+  onCloseModal = () => {
+    this.setState({
+      modal: {
+        type: null,
+        id: null,
+        title: null,
+        approved: null
+      }
+    });
+    $("#editDeleteModal").modal("hide");
+  };
+
+  onSubmit = e => {
+    e.preventDefault();
+
+    const id = this.state.modal.id;
+    const users = this.props.users.users;
+
+    if (this.state.modal.type == "edit") {
+      const approvedStatus = this.state.modal.approved;
+      // update user status
+      this.props.editUserApprovalStatus(id, approvedStatus, users);
+    } else if (this.state.modal.type == "delete") {
+      // delete user
+      this.props.deleteUser(id, users);
+    }
+
+    // close modal
+    this.onCloseModal();
   };
 
   modalContent = () => {
+    const { type, title, approved } = this.state.modal;
     return (
       <div
-        id="editModal"
-        className="modal fade bd-example-modal-lg"
+        id="editDeleteModal"
+        className="modal fade"
         tabIndex="-1"
         role="dialog"
         aria-labelledby="myLargeModalLabel"
         aria-hidden="true"
       >
-        <div className="modal-dialog modal-lg modal-dialog-centered">
+        <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title" id="exampleModalLongTitle">
-                Modal title
-              </h5>
-              <button
-                type="button"
-                className="close"
-                data-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div className="modal-body">...</div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                data-dismiss="modal"
-              >
-                Close
-              </button>
-              <button type="button" className="btn btn-primary">
-                Save changes
-              </button>
-            </div>
+            <form onSubmit={this.onSubmit} method="POST">
+              <div className="modal-body">
+                <div className="form-group">
+                  <h5 style={{ color: "#63c2de" }}>{title}</h5>
+                </div>
+                {type == "edit" ? (
+                  <div className="form-group row">
+                    <label className="col-md-2 col-form-label">Status</label>
+                    <div className="col-md-10 col-form-label">
+                      <div className="form-check form-check-inline mr-1">
+                        <input
+                          className="form-check-input"
+                          id="inline-radio1"
+                          type="radio"
+                          value="1"
+                          name="approved"
+                          onChange={this.onChange}
+                          checked={approved == "1" ? "checked" : ""}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor="inline-radio1"
+                          style={{ color: "#4dbd74" }}
+                        >
+                          Approved
+                        </label>
+                      </div>
+                      <div
+                        className="form-check form-check-inline mr-1"
+                        style={{ marginLeft: "20px" }}
+                      >
+                        <input
+                          className="form-check-input"
+                          id="inline-radio2"
+                          type="radio"
+                          value="0"
+                          name="approved"
+                          onChange={this.onChange}
+                          checked={approved == "0" ? "checked" : ""}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor="inline-radio2"
+                          style={{ color: "#ffc107" }}
+                        >
+                          Pending
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  ""
+                )}
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="submit"
+                  className={
+                    type == "delete" ? "btn btn-danger" : "btn btn-primary"
+                  }
+                >
+                  {type == "delete" ? "Delete" : "Save Changes"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  data-dismiss="modal"
+                  onClick={this.onCloseModal}
+                >
+                  Close
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
     );
   };
+
   filterResult = (filter, row) => {
     const rowField = _.lowerCase(row[filter.id]);
     const searchValue = _.lowerCase(filter.value);
@@ -232,78 +235,92 @@ class Users extends Component {
   };
 
   render() {
-    const { data } = this.state;
+    const { users, loading } = this.props.users;
 
-    return !data.length ? (
+    return users == null || loading ? (
       <Spinner />
     ) : (
       <div>
         <div className="row">{this.modalContent()}</div>
-        <ReactTable
-          data={data}
-          filterable
-          defaultFilterMethod={(filter, row) => this.filterResult(filter, row)}
-          columns={[
-            {
-              Header: "ID",
-              accessor: "id",
-              minWidth: 20
-            },
-            {
-              Header: "Name",
-              accessor: "Name",
-              minWidth: 110
-            },
-            {
-              Header: "Email",
-              accessor: "Email",
-              minWidth: 180
-            },
-            {
-              Header: "StaffId",
-              accessor: "StaffId",
-              width: 70
-            },
-            {
-              Header: "Desg",
-              accessor: "Desg"
-            },
-            {
-              Header: "ServiceGroup",
-              accessor: "ServiceGroup"
-            },
-            {
-              Header: "Company",
-              accessor: "Company"
-            },
-            {
-              Header: "Dept",
-              accessor: "Dept",
-              width: 100
-            },
-            {
-              Header: "Location",
-              accessor: "Location",
-              width: 90
-            },
-            {
-              Header: "Country",
-              accessor: "Country",
-              width: 90
-            },
-            {
-              Header: "Actions",
-              width: 70,
-              Cell: row => this.actionButtons(row)
-            }
-          ]}
-          defaultPageSize={10}
-          className="-striped -highlight"
-        />
+        <div className="card">
+          <div className="card-header">All Members</div>
+          <div className="card-body">
+            <ReactTable
+              data={users}
+              filterable
+              defaultFilterMethod={(filter, row) =>
+                this.filterResult(filter, row)
+              }
+              columns={[
+                {
+                  Header: "ID",
+                  accessor: "id",
+                  minWidth: 30
+                },
+                {
+                  Header: "Name",
+                  accessor: "Name",
+                  minWidth: 110
+                },
+                {
+                  Header: "Email",
+                  accessor: "Email",
+                  minWidth: 180
+                },
+                {
+                  Header: "StaffId",
+                  accessor: "StaffId",
+                  width: 70
+                },
+                {
+                  Header: "Desg",
+                  accessor: "Desg"
+                },
+                {
+                  Header: "ServiceGroup",
+                  accessor: "ServiceGroup"
+                },
+                {
+                  Header: "Company",
+                  accessor: "Company"
+                },
+                {
+                  Header: "Dept",
+                  accessor: "Dept",
+                  width: 100
+                },
+                {
+                  Header: "Location",
+                  accessor: "Location",
+                  width: 90
+                },
+                {
+                  Header: "Country",
+                  accessor: "Country",
+                  width: 90
+                },
+                {
+                  Header: "Actions",
+                  width: 70,
+                  Cell: row => this.actionButtons(row)
+                }
+              ]}
+              defaultPageSize={10}
+              className="-striped -highlight"
+            />
+          </div>
+        </div>
         <br />
       </div>
     );
   }
 }
 
-export default Users;
+const mapStateToProps = state => ({
+  users: state.users
+});
+
+export default connect(
+  mapStateToProps,
+  { getUsers, editUserApprovalStatus, deleteUser }
+)(Users);
