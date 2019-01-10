@@ -1,15 +1,15 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import axios from "axios";
 import Spinner from "../../common/Spinner";
+import classnames from "classnames";
 import _ from "lodash";
 import * as d3 from "d3";
 import $ from "jquery";
-import swal from "@sweetalert/with-react";
 import {
   getUsers,
   editUserApprovalStatus,
-  deleteUser
+  deleteUser,
+  addUser
 } from "../../../actions/usersAction";
 
 // Import React Table
@@ -24,8 +24,12 @@ class Users extends Component {
         type: null,
         id: null,
         title: null,
-        approved: null
-      }
+        approved: null,
+        staffId: "",
+        modalLoading: false
+      },
+      errMsg: null,
+      succMsg: null
     };
   }
 
@@ -34,8 +38,35 @@ class Users extends Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    // console.log(nextProps);
+    const errors = !_.isEmpty(nextProps.errors) ? nextProps.errors : null;
+    const successMsg = !_.isEmpty(nextProps.users.successMsg)
+      ? nextProps.users.successMsg
+      : null;
+
+    this.setState({
+      modal: {
+        ...this.state.modal,
+        modalLoading: errors ? false : nextProps.users.modalLoading
+      },
+      errMsg: errors,
+      succMsg: successMsg
+    });
   }
+
+  addMember = () => {
+    this.setState({
+      modal: {
+        ...this.state.modal,
+        type: "add",
+        title: "Add new member",
+        staffId: "",
+        modalLoading: false
+      },
+      errMsg: null,
+      succMsg: null
+    });
+    $("#AddModal").modal("show");
+  };
 
   editAction = e => {
     const id = this.getIdOfElement(e);
@@ -43,14 +74,16 @@ class Users extends Component {
 
     this.setState({
       modal: {
+        ...this.state.modal,
         type: "edit",
         id: _.parseInt(id),
         title: "Change Approve Status?",
-        approved: data[0].Approved
+        approved: data[0].Approved,
+        staffId: ""
       }
     });
 
-    $("#editDeleteModal").modal("show");
+    $("#EditModal").modal("show");
   };
 
   deleteAction = e => {
@@ -61,10 +94,11 @@ class Users extends Component {
         type: "delete",
         id: _.parseInt(id),
         title: "Are you sure want to delete?",
-        approved: null
+        approved: null,
+        staffId: ""
       }
     });
-    $("#editDeleteModal").modal("show");
+    $("#DeleteModal").modal("show");
   };
 
   getIdOfElement = e => {
@@ -81,7 +115,7 @@ class Users extends Component {
           id={id}
           onClick={this.editAction}
         >
-          <i class="fas fa-pen-fancy">{""}</i>
+          <i className="fas fa-pen-fancy">{""}</i>
         </button>{" "}
         <button
           className="btn btn-sm btn-outline-danger"
@@ -89,7 +123,7 @@ class Users extends Component {
           id={id}
           onClick={this.deleteAction}
         >
-          <i class="fas fa-times">{""}</i>
+          <i className="fas fa-times">{""}</i>
         </button>
       </div>
     );
@@ -104,42 +138,77 @@ class Users extends Component {
     });
   };
 
-  onCloseModal = () => {
+  onCloseModal = modalId => {
     this.setState({
       modal: {
+        ...this.state.modal,
         type: null,
         id: null,
         title: null,
-        approved: null
-      }
+        approved: null,
+        staffId: "",
+        modalLoading: false
+      },
+      errMsg: null,
+      succMsg: null
     });
-    $("#editDeleteModal").modal("hide");
+    $(`#${modalId}`).modal("hide");
   };
 
-  onSubmit = e => {
+  onAddModalSubmit = e => {
     e.preventDefault();
 
-    const id = this.state.modal.id;
-    const users = this.props.users.users;
+    const { staffId } = this.state.modal;
+    const { addUser } = this.props;
+    const { users } = this.props.users;
 
-    if (this.state.modal.type == "edit") {
-      const approvedStatus = this.state.modal.approved;
-      // update user status
-      this.props.editUserApprovalStatus(id, approvedStatus, users);
-    } else if (this.state.modal.type == "delete") {
-      // delete user
-      this.props.deleteUser(id, users);
-    }
+    this.setState({
+      modal: {
+        ...this.state.modal,
+        modalLoading: true
+      },
+      errMsg: null,
+      succMsg: null
+    });
 
-    // close modal
-    this.onCloseModal();
+    $(".addModalSubmitButton").removeClass("is-invalid");
+    $(".addModalSubmitButton").removeClass("is-valid");
+
+    addUser(staffId, users);
   };
 
-  modalContent = () => {
-    const { type, title, approved } = this.state.modal;
+  onEditModalSubmit = e => {
+    e.preventDefault();
+
+    const { id, approved } = this.state.modal;
+    const { editUserApprovalStatus } = this.props;
+    const { users } = this.props.users;
+
+    // update user status
+    editUserApprovalStatus(id, approved, users);
+    this.onCloseModal("EditModal");
+  };
+
+  onDeleteModalSubmit = e => {
+    e.preventDefault();
+
+    const { id } = this.state.modal;
+    const { deleteUser } = this.props;
+    const { users } = this.props.users;
+
+    // delete user
+    deleteUser(id, users);
+    this.onCloseModal("DeleteModal");
+  };
+
+  deleteModalContent = () => {
+    const { type, title, approved, modalLoading } = this.state.modal;
+    const errors = this.props.errors;
+    const successMsg = this.props.users.successMsg;
+
     return (
       <div
-        id="editDeleteModal"
+        id="DeleteModal"
         className="modal fade"
         tabIndex="-1"
         role="dialog"
@@ -148,74 +217,188 @@ class Users extends Component {
       >
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
-            <form onSubmit={this.onSubmit} method="POST">
+            <form onSubmit={this.onDeleteModalSubmit} method="POST">
               <div className="modal-body">
                 <div className="form-group">
                   <h5 style={{ color: "#63c2de" }}>{title}</h5>
                 </div>
-                {type == "edit" ? (
-                  <div className="form-group row">
-                    <label className="col-md-2 col-form-label">Status</label>
-                    <div className="col-md-10 col-form-label">
-                      <div className="form-check form-check-inline mr-1">
-                        <input
-                          className="form-check-input"
-                          id="inline-radio1"
-                          type="radio"
-                          value="1"
-                          name="approved"
-                          onChange={this.onChange}
-                          checked={approved == "1" ? "checked" : ""}
-                        />
-                        <label
-                          className="form-check-label"
-                          htmlFor="inline-radio1"
-                          style={{ color: "#4dbd74" }}
-                        >
-                          Approved
-                        </label>
-                      </div>
-                      <div
-                        className="form-check form-check-inline mr-1"
-                        style={{ marginLeft: "20px" }}
-                      >
-                        <input
-                          className="form-check-input"
-                          id="inline-radio2"
-                          type="radio"
-                          value="0"
-                          name="approved"
-                          onChange={this.onChange}
-                          checked={approved == "0" ? "checked" : ""}
-                        />
-                        <label
-                          className="form-check-label"
-                          htmlFor="inline-radio2"
-                          style={{ color: "#ffc107" }}
-                        >
-                          Pending
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  ""
-                )}
               </div>
               <div className="modal-footer">
-                <button
-                  type="submit"
-                  className={
-                    type == "delete" ? "btn btn-danger" : "btn btn-primary"
-                  }
-                >
-                  {type == "delete" ? "Delete" : "Save Changes"}
+                <button type="submit" className="btn btn-danger">
+                  Delete
                 </button>
                 <button
                   type="button"
                   className="btn btn-secondary"
                   data-dismiss="modal"
-                  onClick={this.onCloseModal}
+                  onClick={() => this.onCloseModal("DeleteModal")}
+                >
+                  Close
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  editModalContent = () => {
+    const { title, approved } = this.state.modal;
+    return (
+      <div
+        id="EditModal"
+        className="modal fade"
+        tabIndex="-1"
+        role="dialog"
+        aria-labelledby="myLargeModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <form onSubmit={this.onEditModalSubmit} method="POST">
+              <div className="modal-body">
+                <div className="form-group">
+                  <h5 style={{ color: "#63c2de" }}>{title}</h5>
+                </div>
+                <div className="form-group row">
+                  <label className="col-md-2 col-form-label">Status</label>
+                  <div className="col-md-10 col-form-label">
+                    <div className="form-check form-check-inline mr-1">
+                      <input
+                        className="form-check-input"
+                        id="inline-radio1"
+                        type="radio"
+                        value="1"
+                        name="approved"
+                        onChange={this.onChange}
+                        checked={approved == "1" ? "checked" : ""}
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="inline-radio1"
+                        style={{ color: "#4dbd74" }}
+                      >
+                        Approved
+                      </label>
+                    </div>
+                    <div
+                      className="form-check form-check-inline mr-1"
+                      style={{ marginLeft: "20px" }}
+                    >
+                      <input
+                        className="form-check-input"
+                        id="inline-radio2"
+                        type="radio"
+                        value="0"
+                        name="approved"
+                        onChange={this.onChange}
+                        checked={approved == "0" ? "checked" : ""}
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="inline-radio2"
+                        style={{ color: "#ffc107" }}
+                      >
+                        Pending
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="submit" className="btn btn-primary">
+                  Save Changes
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  data-dismiss="modal"
+                  onClick={() => this.onCloseModal("EditModal")}
+                >
+                  Close
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  AddModalContent = () => {
+    const { title, modalLoading } = this.state.modal;
+    const { errMsg, succMsg } = this.state;
+
+    let buttonState;
+    let modalContent;
+    let submitButtonText;
+
+    if (modalLoading == true) {
+      buttonState = modalLoading ? "disabled" : "";
+      modalContent = <Spinner />;
+      submitButtonText = "Adding...";
+    } else {
+      submitButtonText = "Add Member";
+      modalContent = (
+        <div className="form-group">
+          <div className="input-group">
+            <div className="input-group-prepend">
+              <span className="input-group-text">
+                <i className="fa fa-user" />
+              </span>
+            </div>
+            <input
+              className={classnames("form-control addModalSubmitButton", {
+                "is-invalid": errMsg,
+                "is-valid": succMsg
+              })}
+              id="staffId"
+              type="text"
+              name="staffId"
+              placeholder="Staff Id"
+              value={this.state.modal.staffId}
+              onChange={this.onChange}
+            />
+            <div className="invalid-feedback">{errMsg}</div>
+            <div className="valid-feedback">{succMsg}</div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        id="AddModal"
+        className="modal fade"
+        tabIndex="-1"
+        role="dialog"
+        aria-labelledby="myLargeModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <form onSubmit={this.onAddModalSubmit} method="POST">
+              <div className="modal-body">
+                <div className="form-group">
+                  <h5 style={{ color: "#63c2de" }}>{title}</h5>
+                </div>
+
+                {modalContent}
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={buttonState}
+                >
+                  {submitButtonText}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  data-dismiss="modal"
+                  onClick={() => this.onCloseModal("AddModal")}
                 >
                   Close
                 </button>
@@ -237,13 +420,26 @@ class Users extends Component {
   render() {
     const { users, loading } = this.props.users;
 
-    return users == null || loading ? (
+    return _.isEmpty(users) || loading ? (
       <Spinner />
     ) : (
       <div>
-        <div className="row">{this.modalContent()}</div>
+        <div className="row">
+          {this.AddModalContent()}
+          {this.deleteModalContent()}
+          {this.editModalContent()}
+        </div>
         <div className="card">
-          <div className="card-header">All Members</div>
+          <div className="card-header">
+            All Members
+            <button
+              className="btn btn-sm btn-pill btn-outline-success"
+              style={{ float: "right" }}
+              onClick={this.addMember}
+            >
+              <i className="fas fa-plus" /> Add Member
+            </button>
+          </div>
           <div className="card-body">
             <ReactTable
               data={users}
@@ -317,10 +513,11 @@ class Users extends Component {
 }
 
 const mapStateToProps = state => ({
-  users: state.users
+  users: state.users,
+  errors: state.errors
 });
 
 export default connect(
   mapStateToProps,
-  { getUsers, editUserApprovalStatus, deleteUser }
+  { getUsers, editUserApprovalStatus, deleteUser, addUser }
 )(Users);

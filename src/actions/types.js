@@ -5,6 +5,8 @@ export const SET_CURRENT_USER = "SET_CURRENT_USER";
 
 // Users constant
 export const USERS_LOADING = "USERS_LOADING";
+export const USERS_MODAL_LOADING = "USERS_MODAL_LOADING";
+export const USERS_LOADING_STATUS_REFRESH = "USERS_LOADING_STATUS_REFRESH";
 export const GET_USERS = "GET_USERS";
 export const ADD_USERS = "ADD_USERS";
 export const EDIT_USERS = "EDIT_USERS";

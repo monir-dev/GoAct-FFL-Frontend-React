@@ -1,12 +1,15 @@
 import axios from "axios";
 import {
   USERS_LOADING,
+  USERS_MODAL_LOADING,
   GET_USERS,
   ADD_USERS,
   EDIT_USERS,
   EDIT_USER_STATUS,
   DELETE_USERS,
-  GET_ERRORS
+  GET_ERRORS,
+  CLEAR_ERRORS,
+  USERS_LOADING_STATUS_REFRESH
 } from "../actions/types";
 
 // Get all profile
@@ -40,6 +43,47 @@ export const getUsers = () => dispatch => {
       dispatch({
         type: GET_USERS,
         payload: null
+      })
+    );
+};
+
+// Add User
+export const addUser = (staffId, users) => dispatch => {
+  dispatch({ type: CLEAR_ERRORS });
+  dispatch(setUsersModalLoading());
+  axios
+    .post(`/users`, {
+      staffId: staffId
+    })
+    .then(res => res.data)
+    .then(res => {
+      if (res.status == "failed") {
+        dispatch({
+          type: GET_ERRORS,
+          payload: res.msg
+        });
+        dispatch({ type: USERS_LOADING_STATUS_REFRESH });
+      } else if (res.status == "success") {
+        let data = res.body;
+        delete data.CompanyId;
+        delete data.CreatedAt;
+        delete data.Displayname;
+        delete data.ParentId;
+        delete data.Password;
+        delete data.RememberToken;
+        delete data.UpdatedAt;
+        delete data.UserType;
+        // add new user to state users
+        dispatch({
+          type: ADD_USERS,
+          payload: data
+        });
+      }
+    })
+    .catch(err =>
+      dispatch({
+        type: GET_ERRORS,
+        payload: "Adding member failed"
       })
     );
 };
@@ -109,5 +153,12 @@ export const deleteUser = (id, users) => dispatch => {
 export const setUsersLoading = () => {
   return {
     type: USERS_LOADING
+  };
+};
+
+// Set users loading
+export const setUsersModalLoading = () => {
+  return {
+    type: USERS_MODAL_LOADING
   };
 };
