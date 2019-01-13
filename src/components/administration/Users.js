@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import Spinner from "../../common/Spinner";
+import Spinner from "../common/Spinner";
 import classnames from "classnames";
 import _ from "lodash";
 import * as d3 from "d3";
@@ -10,7 +10,7 @@ import {
   editUserApprovalStatus,
   deleteUser,
   addUser
-} from "../../../actions/usersAction";
+} from "../../actions/membersAction";
 
 // Import React Table
 import ReactTable from "react-table";
@@ -459,38 +459,6 @@ class Users extends Component {
                   Header: "Email",
                   accessor: "Email",
                   minWidth: 180
-                },
-                {
-                  Header: "StaffId",
-                  accessor: "StaffId",
-                  width: 70
-                },
-                {
-                  Header: "Desg",
-                  accessor: "Desg"
-                },
-                {
-                  Header: "ServiceGroup",
-                  accessor: "ServiceGroup"
-                },
-                {
-                  Header: "Company",
-                  accessor: "Company"
-                },
-                {
-                  Header: "Dept",
-                  accessor: "Dept",
-                  width: 100
-                },
-                {
-                  Header: "Location",
-                  accessor: "Location",
-                  width: 90
-                },
-                {
-                  Header: "Country",
-                  accessor: "Country",
-                  width: 90
                 },
                 {
                   Header: "Actions",

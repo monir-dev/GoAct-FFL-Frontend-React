@@ -27,12 +27,14 @@ import Dashboard from "./components/dashboard/Dashboard";
 
 import NotFound from "./components/not-found/NotFound";
 
-import Users from "./components/ffl/administration/Users";
+import Users from "./components/administration/Users";
+import Roles from "./components/administration/Roles";
 
 import "./App.css";
+import _ from "lodash";
 
 // check for token
-if (localStorage.jwtToken) {
+if (localStorage.jwtToken && localStorage.jwtToken !== undefined) {
   // set auth token header auth
   setAuthToken(localStorage.jwtToken);
   // decode token and get user info an exp
@@ -79,6 +81,7 @@ class App extends Component {
                 <Switch>
                   <PrivateRoute exact path="/dashboard" component={Dashboard} />
                   <PrivateRoute exact path="/users" component={Users} />
+                  <PrivateRoute exact path="/roles" component={Roles} />
                 </Switch>
               </div>
             </div>

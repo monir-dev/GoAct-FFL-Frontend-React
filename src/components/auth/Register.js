@@ -34,14 +34,22 @@ export class Register extends Component {
   onSubmit = e => {
     e.preventDefault();
 
-    const newUser = {
-      name: this.state.name,
-      email: this.state.email,
-      password: this.state.password,
-      password2: this.state.password2
-    };
+    if (this.state.password == this.state.password2) {
+      const newUser = {
+        name: this.state.name,
+        email: this.state.email,
+        password: this.state.password,
+        password2: this.state.password2
+      };
 
-    this.props.registerUser(newUser, this.props.history);
+      this.props.registerUser(newUser, this.props.history);
+    } else {
+      this.setState({
+        errors: {
+          password2: "Password and Confirm Password are not same"
+        }
+      });
+    }
   };
 
   render() {

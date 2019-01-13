@@ -4,13 +4,12 @@ import {
   USERS_MODAL_LOADING,
   GET_USERS,
   ADD_USERS,
-  EDIT_USERS,
   EDIT_USER_STATUS,
   DELETE_USERS,
   GET_ERRORS,
   CLEAR_ERRORS,
   USERS_LOADING_STATUS_REFRESH
-} from "../actions/types";
+} from "./types";
 
 // Get all profile
 export const getUsers = () => dispatch => {
@@ -130,11 +129,7 @@ export const deleteUser = (id, users) => dispatch => {
     .then(res => res.data)
     .then(res => {
       if (res.status == "success") {
-        let data = users.filter(item => {
-          if (item.id != id) {
-            return item;
-          }
-        });
+        let data = users.filter(item => item.id != id);
         dispatch({
           type: DELETE_USERS,
           payload: data

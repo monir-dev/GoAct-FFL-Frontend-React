@@ -18,12 +18,17 @@ class Sidebar extends Component {
             <li className="nav-title">Administration</li>
             <li className="nav-item nav-dropdown">
               <Link className="nav-link nav-dropdown-toggle" to="">
-                <i className="nav-icon icon-puzzle" /> Administration
+                <i className="nav-icon icon-wrench" /> Administration
               </Link>
               <ul className="nav-dropdown-items">
                 <li className="nav-item">
                   <Link className="nav-link" to="/users">
-                    <i className="nav-icon icon-puzzle" /> Users
+                    <i className="nav-icon icon-user" /> Users
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/roles">
+                    <i className="nav-icon fab fa-critical-role" /> Roles
                   </Link>
                 </li>
               </ul>

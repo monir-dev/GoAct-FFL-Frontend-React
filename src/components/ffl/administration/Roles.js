@@ -5,28 +5,31 @@ import classnames from "classnames";
 import _ from "lodash";
 import * as d3 from "d3";
 import $ from "jquery";
+
 import {
-  getUsers,
-  editUserApprovalStatus,
-  deleteUser,
-  addUser
-} from "../../../actions/usersAction";
+  getRoles,
+  addRole,
+  editRole,
+  deleteRole
+} from "../../../actions/rolesAction";
 
 // Import React Table
 import ReactTable from "react-table";
 import "react-table/react-table.css";
 
-class Users extends Component {
+class Roles extends Component {
   constructor() {
     super();
     this.state = {
       modal: {
-        type: null,
         id: null,
         title: null,
         approved: null,
         staffId: "",
-        modalLoading: false
+        modalLoading: false,
+        name: "",
+        display_name: "",
+        description: ""
       },
       errMsg: null,
       succMsg: null
@@ -34,32 +37,30 @@ class Users extends Component {
   }
 
   componentDidMount = () => {
-    this.props.getUsers();
+    this.props.getRoles();
   };
 
   componentWillReceiveProps(nextProps) {
     const errors = !_.isEmpty(nextProps.errors) ? nextProps.errors : null;
-    const successMsg = !_.isEmpty(nextProps.users.successMsg)
-      ? nextProps.users.successMsg
+    const successMsg = !_.isEmpty(nextProps.roles.successMsg)
+      ? nextProps.roles.successMsg
       : null;
 
     this.setState({
       modal: {
         ...this.state.modal,
-        modalLoading: errors ? false : nextProps.users.modalLoading
+        modalLoading: errors ? false : nextProps.roles.modalLoading
       },
       errMsg: errors,
       succMsg: successMsg
     });
   }
 
-  addMember = () => {
+  addRole = () => {
     this.setState({
       modal: {
         ...this.state.modal,
-        type: "add",
         title: "Add new member",
-        staffId: "",
         modalLoading: false
       },
       errMsg: null,
@@ -70,16 +71,16 @@ class Users extends Component {
 
   editAction = e => {
     const id = this.getIdOfElement(e);
-    const data = this.props.users.users.filter(item => item.id == id);
+    const data = this.props.roles.roles.filter(item => item.id == id)[0];
 
     this.setState({
       modal: {
         ...this.state.modal,
-        type: "edit",
         id: _.parseInt(id),
-        title: "Change Approve Status?",
-        approved: data[0].Approved,
-        staffId: ""
+        title: "Edit Role",
+        name: data.name,
+        display_name: data.display_name,
+        description: data.description
       }
     });
 
@@ -91,7 +92,6 @@ class Users extends Component {
     this.setState({
       modal: {
         ...this.state.modal,
-        type: "delete",
         id: _.parseInt(id),
         title: "Are you sure want to delete?",
         approved: null,
@@ -142,12 +142,14 @@ class Users extends Component {
     this.setState({
       modal: {
         ...this.state.modal,
-        type: null,
         id: null,
         title: null,
         approved: null,
         staffId: "",
-        modalLoading: false
+        modalLoading: false,
+        name: "",
+        display_name: "",
+        description: ""
       },
       errMsg: null,
       succMsg: null
@@ -158,9 +160,10 @@ class Users extends Component {
   onAddModalSubmit = e => {
     e.preventDefault();
 
-    const { staffId } = this.state.modal;
-    const { addUser } = this.props;
-    const { users } = this.props.users;
+    const { name, display_name, description } = this.state.modal;
+    const { roles } = this.props.roles;
+
+    const data = { name, display_name, description };
 
     this.setState({
       modal: {
@@ -171,18 +174,24 @@ class Users extends Component {
       succMsg: null
     });
 
-    addUser(staffId, users);
+    this.props.addRole(data, roles);
+    this.onCloseModal("AddModal");
   };
 
   onEditModalSubmit = e => {
     e.preventDefault();
 
-    const { id, approved } = this.state.modal;
-    const { editUserApprovalStatus } = this.props;
-    const { users } = this.props.users;
+    const { id, name, display_name, description } = this.state.modal;
+    const { roles } = this.props.roles;
 
-    // update user status
-    editUserApprovalStatus(id, approved, users);
+    const data = {
+      name,
+      display_name,
+      description
+    };
+
+    // update role
+    this.props.editRole(id, data, roles);
     this.onCloseModal("EditModal");
   };
 
@@ -190,18 +199,15 @@ class Users extends Component {
     e.preventDefault();
 
     const { id } = this.state.modal;
-    const { deleteUser } = this.props;
-    const { users } = this.props.users;
+    const { roles } = this.props.roles;
 
     // delete user
-    deleteUser(id, users);
+    this.props.deleteRole(id, roles);
     this.onCloseModal("DeleteModal");
   };
 
   deleteModalContent = () => {
-    const { type, title, approved, modalLoading } = this.state.modal;
-    const errors = this.props.errors;
-    const successMsg = this.props.users.successMsg;
+    const { title } = this.state.modal;
 
     return (
       <div
@@ -253,53 +259,69 @@ class Users extends Component {
       >
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
-            <form onSubmit={this.onEditModalSubmit} method="POST">
+            <form
+              onSubmit={this.onEditModalSubmit}
+              method="POST"
+              className="form-horizontal"
+            >
               <div className="modal-body">
                 <div className="form-group">
                   <h5 style={{ color: "#63c2de" }}>{title}</h5>
                 </div>
+                <br />
                 <div className="form-group row">
-                  <label className="col-md-2 col-form-label">Status</label>
-                  <div className="col-md-10 col-form-label">
-                    <div className="form-check form-check-inline mr-1">
-                      <input
-                        className="form-check-input"
-                        id="inline-radio1"
-                        type="radio"
-                        value="1"
-                        name="approved"
-                        onChange={this.onChange}
-                        checked={approved == "1" ? "checked" : ""}
-                      />
-                      <label
-                        className="form-check-label"
-                        htmlFor="inline-radio1"
-                        style={{ color: "#4dbd74" }}
-                      >
-                        Approved
-                      </label>
-                    </div>
-                    <div
-                      className="form-check form-check-inline mr-1"
-                      style={{ marginLeft: "20px" }}
-                    >
-                      <input
-                        className="form-check-input"
-                        id="inline-radio2"
-                        type="radio"
-                        value="0"
-                        name="approved"
-                        onChange={this.onChange}
-                        checked={approved == "0" ? "checked" : ""}
-                      />
-                      <label
-                        className="form-check-label"
-                        htmlFor="inline-radio2"
-                        style={{ color: "#ffc107" }}
-                      >
-                        Pending
-                      </label>
-                    </div>
+                  <label
+                    className="col-md-3 col-form-label text-right"
+                    htmlFor="name"
+                  >
+                    Name
+                  </label>
+                  <div className="col-md-9">
+                    <input
+                      className="form-control"
+                      id="name"
+                      type="text"
+                      name="name"
+                      value={this.state.modal.name}
+                      onChange={this.onChange}
+                    />
+                  </div>
+                </div>
+                <div className="form-group row">
+                  <label
+                    className="col-md-3 col-form-label text-right"
+                    htmlFor="display_name"
+                  >
+                    Display Name
+                  </label>
+                  <div className="col-md-9">
+                    <input
+                      className="form-control"
+                      id="display_name"
+                      type="text"
+                      name="display_name"
+                      value={this.state.modal.display_name}
+                      onChange={this.onChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group row">
+                  <label
+                    className="col-md-3 col-form-label text-right"
+                    htmlFor="description"
+                  >
+                    Description
+                  </label>
+                  <div className="col-md-9">
+                    <input
+                      className="form-control"
+                      id="description"
+                      type="text"
+                      name="description"
+                      value={this.state.modal.description}
+                      onChange={this.onChange}
+                    />
                   </div>
                 </div>
               </div>
@@ -325,7 +347,6 @@ class Users extends Component {
 
   AddModalContent = () => {
     const { title, modalLoading } = this.state.modal;
-    const { errMsg, succMsg } = this.state;
 
     let buttonState;
     let modalContent;
@@ -336,29 +357,64 @@ class Users extends Component {
       modalContent = <Spinner />;
       submitButtonText = "Adding...";
     } else {
-      submitButtonText = "Add Member";
+      submitButtonText = "Add Role";
       modalContent = (
-        <div className="form-group">
-          <div className="input-group">
-            <div className="input-group-prepend">
-              <span className="input-group-text">
-                <i className="fa fa-user" />
-              </span>
+        <div>
+          <br />
+          <div className="form-group row">
+            <label
+              className="col-md-3 col-form-label text-right"
+              htmlFor="name"
+            >
+              Name
+            </label>
+            <div className="col-md-9">
+              <input
+                className="form-control"
+                id="name"
+                type="text"
+                name="name"
+                value={this.state.modal.name}
+                onChange={this.onChange}
+              />
             </div>
-            <input
-              className={classnames("form-control addModalSubmitButton", {
-                "is-invalid": errMsg,
-                "is-valid": succMsg
-              })}
-              id="staffId"
-              type="text"
-              name="staffId"
-              placeholder="Staff Id"
-              value={this.state.modal.staffId}
-              onChange={this.onChange}
-            />
-            <div className="invalid-feedback">{errMsg}</div>
-            <div className="valid-feedback">{succMsg}</div>
+          </div>
+          <div className="form-group row">
+            <label
+              className="col-md-3 col-form-label text-right"
+              htmlFor="display_name"
+            >
+              Display Name
+            </label>
+            <div className="col-md-9">
+              <input
+                className="form-control"
+                id="display_name"
+                type="text"
+                name="display_name"
+                value={this.state.modal.display_name}
+                onChange={this.onChange}
+              />
+            </div>
+          </div>
+
+          <div className="form-group row">
+            <label
+              className="col-md-3 col-form-label text-right"
+              htmlFor="description"
+            >
+              Description
+            </label>
+            <div className="col-md-9">
+              <input
+                className="form-control"
+                id="description"
+                type="text"
+                name="description"
+                value={this.state.modal.description}
+                onChange={this.onChange}
+              />
+            </div>
           </div>
         </div>
       );
@@ -415,9 +471,10 @@ class Users extends Component {
   };
 
   render() {
-    const { users, loading } = this.props.users;
+    const loading = this.props.roles.loading;
+    const data = this.props.roles.roles;
 
-    return _.isEmpty(users) || loading ? (
+    return _.isEmpty(data) || loading ? (
       <Spinner />
     ) : (
       <div>
@@ -428,69 +485,31 @@ class Users extends Component {
         </div>
         <div className="card">
           <div className="card-header">
-            All Members
+            All Roles
             <button
               className="btn btn-sm btn-pill btn-outline-success"
               style={{ float: "right" }}
-              onClick={this.addMember}
+              onClick={this.addRole}
             >
-              <i className="fas fa-plus" /> Add Member
+              <i className="fas fa-plus" /> Add Role
             </button>
           </div>
           <div className="card-body">
             <ReactTable
-              data={users}
+              data={data}
               filterable
               defaultFilterMethod={(filter, row) =>
                 this.filterResult(filter, row)
               }
               columns={[
                 {
-                  Header: "ID",
-                  accessor: "id",
-                  minWidth: 30
-                },
-                {
                   Header: "Name",
-                  accessor: "Name",
+                  accessor: "display_name",
                   minWidth: 110
                 },
                 {
-                  Header: "Email",
-                  accessor: "Email",
-                  minWidth: 180
-                },
-                {
-                  Header: "StaffId",
-                  accessor: "StaffId",
-                  width: 70
-                },
-                {
-                  Header: "Desg",
-                  accessor: "Desg"
-                },
-                {
-                  Header: "ServiceGroup",
-                  accessor: "ServiceGroup"
-                },
-                {
-                  Header: "Company",
-                  accessor: "Company"
-                },
-                {
-                  Header: "Dept",
-                  accessor: "Dept",
-                  width: 100
-                },
-                {
-                  Header: "Location",
-                  accessor: "Location",
-                  width: 90
-                },
-                {
-                  Header: "Country",
-                  accessor: "Country",
-                  width: 90
+                  Header: "Description",
+                  accessor: "description"
                 },
                 {
                   Header: "Actions",
@@ -510,11 +529,11 @@ class Users extends Component {
 }
 
 const mapStateToProps = state => ({
-  users: state.users,
+  roles: state.roles,
   errors: state.errors
 });
 
 export default connect(
   mapStateToProps,
-  { getUsers, editUserApprovalStatus, deleteUser, addUser }
-)(Users);
+  { getRoles, editRole, deleteRole, addRole }
+)(Roles);

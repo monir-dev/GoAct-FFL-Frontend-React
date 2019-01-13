@@ -1,16 +1,15 @@
 import {
-  USERS_LOADING,
-  USERS_MODAL_LOADING,
-  GET_USERS,
-  ADD_USERS,
-  EDIT_USERS,
-  EDIT_USER_STATUS,
-  DELETE_USERS,
-  USERS_LOADING_STATUS_REFRESH
+  ROLES_LOADING,
+  ROLES_MODAL_LOADING,
+  ROLES_MODAL_LOADING_STOP,
+  ADD_ROLE,
+  EDIT_ROLE,
+  DELETE_ROLE,
+  GET_ROLES
 } from "../actions/types";
 
 const initialState = {
-  users: [],
+  roles: [],
   loading: false,
   modalLoading: false,
   successMsg: ""
@@ -18,54 +17,47 @@ const initialState = {
 
 export default (state = initialState, action) => {
   switch (action.type) {
-    case USERS_LOADING:
+    case ROLES_LOADING:
       return {
         ...state,
         loading: true
       };
-    case USERS_MODAL_LOADING:
+    case ROLES_MODAL_LOADING:
       return {
         ...state,
         modalLoading: true
       };
-    case USERS_LOADING_STATUS_REFRESH:
+    case ROLES_MODAL_LOADING_STOP:
       return {
         ...state,
-        loading: false,
-        modalLoading: false,
-        successMsg: ""
+        modalLoading: false
       };
-    case GET_USERS:
+    case ADD_ROLE:
+      let rolesArray = state.roles;
+      rolesArray.push(action.payload);
       return {
         ...state,
-        users: action.payload,
-        loading: false
-      };
-    case ADD_USERS:
-      let userArray = state.users;
-      userArray.push(action.payload);
-      return {
-        ...state,
-        users: userArray,
+        roles: rolesArray,
         loading: false,
         modalLoading: false,
         successMsg: "Member successfully added."
       };
-    case EDIT_USERS:
+    case EDIT_ROLE:
       return {
         ...state,
+        roles: action.payload,
         loading: false
       };
-    case EDIT_USER_STATUS:
+    case DELETE_ROLE:
       return {
         ...state,
-        users: action.payload,
+        roles: action.payload,
         loading: false
       };
-    case DELETE_USERS:
+    case GET_ROLES:
       return {
         ...state,
-        users: action.payload,
+        roles: action.payload,
         loading: false
       };
     default:
