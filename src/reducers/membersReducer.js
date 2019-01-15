@@ -9,7 +9,7 @@ import {
 } from "../actions/types";
 
 const initialState = {
-  users: [],
+  members: [],
   loading: false,
   modalLoading: false,
   successMsg: ""

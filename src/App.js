@@ -27,7 +27,7 @@ import Dashboard from "./components/dashboard/Dashboard";
 
 import NotFound from "./components/not-found/NotFound";
 
-import Users from "./components/administration/Users";
+import Users from "./components/administration/Users/Users";
 import Roles from "./components/administration/Roles";
 
 import "./App.css";
