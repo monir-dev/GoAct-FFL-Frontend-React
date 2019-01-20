@@ -8,12 +8,12 @@ import $ from "jquery";
 import ReactTable from "react-table";
 import "react-table/react-table.css";
 
-import { getUsers } from "../../../actions/UsersAction";
+import { getRoles } from "../../../actions/RolesAction";
 import Add from "./Add";
 import Edit from "./Edit";
 import Delete from "./Delete";
 
-class Users extends Component {
+class Roles extends Component {
   constructor() {
     super();
     this.state = {
@@ -23,7 +23,7 @@ class Users extends Component {
   }
 
   componentDidMount = () => {
-    this.props.getUsers();
+    this.props.getRoles();
   };
 
   showAddUserModal = () => {
@@ -87,8 +87,8 @@ class Users extends Component {
   };
 
   render() {
-    const { users, loading } = this.props.users;
-
+    const { roles, loading } = this.props.roles;
+    const rolesData = roles ? roles : [];
     const { modalType } = this.state;
 
     let modalContent;
@@ -104,7 +104,7 @@ class Users extends Component {
       );
     }
 
-    return _.isEmpty(users) || loading ? (
+    return loading ? (
       <Spinner />
     ) : (
       <div>
@@ -135,7 +135,7 @@ class Users extends Component {
           </div>
           <div className="card-body">
             <ReactTable
-              data={users}
+              data={rolesData}
               filterable
               defaultFilterMethod={(filter, row) =>
                 this.filterResult(filter, row)
@@ -152,8 +152,8 @@ class Users extends Component {
                   minWidth: 110
                 },
                 {
-                  Header: "Email",
-                  accessor: "email",
+                  Header: "Display Name",
+                  accessor: "display_name",
                   minWidth: 180
                 },
                 {
@@ -174,11 +174,11 @@ class Users extends Component {
 }
 
 const mapStateToProps = state => ({
-  users: state.users,
+  roles: state.roles,
   errors: state.errors
 });
 
 export default connect(
   mapStateToProps,
-  { getUsers }
-)(Users);
+  { getRoles }
+)(Roles);

@@ -12,7 +12,7 @@ class Header extends Component {
 
   render() {
     return (
-      <header className="app-header navbar">
+      <header className="app-header navbar" style={{ top: 0 }}>
         <button
           className="navbar-toggler sidebar-toggler d-lg-none mr-auto"
           type="button"

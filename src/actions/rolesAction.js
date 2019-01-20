@@ -33,30 +33,16 @@ export const getRoles = () => dispatch => {
 };
 
 // Add User
-export const addRole = (data, roles) => dispatch => {
+export const addRole = data => dispatch => {
   dispatch({ type: CLEAR_ERRORS });
-  dispatch(setRolesModalLoading());
   axios
     .post(`/roles`, data)
     .then(res => res.data)
     .then(res => {
-      if (res.status == "failed") {
-        dispatch({
-          type: GET_ERRORS,
-          payload: res.msg
-        });
-        dispatch(stopRolesModalLoading());
-      } else if (res.status == "success") {
-        let data = res.body;
-        const payload = {
-          id: data.id,
-          name: data.name,
-          description: data.description,
-          display_name: data.display_name
-        };
+      if (res.status == "success") {
         dispatch({
           type: ADD_ROLE,
-          payload: payload
+          payload: res.data
         });
       }
     })
@@ -70,7 +56,7 @@ export const addRole = (data, roles) => dispatch => {
 
 // Edit User Approve Status
 export const editRole = (id, data, roles) => dispatch => {
-  dispatch(setRolesLoading());
+  // dispatch(setRolesLoading());
   axios
     .put(`/roles/${id}`, data)
     .then(res => res.data)
@@ -81,7 +67,6 @@ export const editRole = (id, data, roles) => dispatch => {
           if (item.id == id) {
             item.name = data.name;
             item.display_name = data.display_name;
-            item.description = data.description;
           }
           return item;
         });
@@ -92,12 +77,12 @@ export const editRole = (id, data, roles) => dispatch => {
         });
       }
     })
-    .catch(err =>
+    .catch(err => {
       dispatch({
         type: GET_ERRORS,
         payload: "Edit failed"
-      })
-    );
+      });
+    });
 };
 
 // Delete user

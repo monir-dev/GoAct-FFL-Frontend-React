@@ -5,6 +5,7 @@ import {
   AUTH_ADD_USERS,
   AUTH_EDIT_USERS,
   AUTH_DELETE_USERS,
+  AUTH_USERS_ASSIGN_ROLE,
   AUTH_USERS_LOADING_STATUS_REFRESH
 } from "../actions/types";
 
@@ -41,7 +42,7 @@ export default (state = initialState, action) => {
         loading: false
       };
     case AUTH_ADD_USERS:
-      let users = state.users;
+      var users = state.users;
       users.push(action.payload);
       return {
         ...state,
@@ -49,6 +50,21 @@ export default (state = initialState, action) => {
         loading: false,
         modalLoading: false,
         successMsg: "User successfully added."
+      };
+    case AUTH_USERS_ASSIGN_ROLE:
+      var users = state.users;
+      users = users.map(item => {
+        if (item.id == action.payload.id) {
+          item = action.payload;
+        }
+        return item;
+      });
+      return {
+        ...state,
+        users,
+        loading: false,
+        modalLoading: false,
+        successMsg: "User role changed successfully"
       };
     case AUTH_EDIT_USERS:
       let usersList = state.users;

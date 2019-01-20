@@ -27,8 +27,8 @@ import Dashboard from "./components/dashboard/Dashboard";
 
 import NotFound from "./components/not-found/NotFound";
 
-import Users from "./components/administration/Users/Users";
-import Roles from "./components/administration/Roles";
+import Users from "./components/administration/Users/Index";
+import Roles from "./components/administration/Roles/Index";
 
 import "./App.css";
 import _ from "lodash";

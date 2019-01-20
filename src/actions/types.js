@@ -13,6 +13,7 @@ export const AUTH_GET_USERS = "AUTH_GET_USERS";
 export const AUTH_ADD_USERS = "AUTH_ADD_USERS";
 export const AUTH_EDIT_USERS = "AUTH_EDIT_USERS";
 export const AUTH_DELETE_USERS = "AUTH_DELETE_USERS";
+export const AUTH_USERS_ASSIGN_ROLE = "AUTH_USERS_ASSIGN_ROLE";
 
 // member constant
 export const USERS_LOADING = "USERS_LOADING";

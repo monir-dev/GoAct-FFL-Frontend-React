@@ -33,20 +33,21 @@ export default (state = initialState, action) => {
         modalLoading: false
       };
     case ADD_ROLE:
-      let rolesArray = state.roles;
-      rolesArray.push(action.payload);
+      let roles = state.roles;
+      roles.push(action.payload);
       return {
         ...state,
-        roles: rolesArray,
+        roles,
         loading: false,
         modalLoading: false,
-        successMsg: "Member successfully added."
+        successMsg: "Role successfully added."
       };
     case EDIT_ROLE:
       return {
         ...state,
         roles: action.payload,
-        loading: false
+        modalLoading: false,
+        successMsg: "Role successfully added."
       };
     case DELETE_ROLE:
       return {

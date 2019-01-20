@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 
-import { deleteUser, deleteBulkUser } from "../../../actions/UsersAction";
+import { deleteRole } from "../../../actions/RolesAction";
 
 class Delete extends Component {
   constructor() {
@@ -19,10 +19,10 @@ class Delete extends Component {
 
   componentWillReceiveProps = nextProps => {
     // code here
-    this.setState({ modalLoading: nextProps.users.modalLoading });
+    this.setState({ modalLoading: nextProps.roles.modalLoading });
     if (nextProps.errors) this.setState({ errors: nextProps.errors });
-    if (nextProps.users.successMsg)
-      this.setState({ succMsg: nextProps.users.successMsg });
+    if (nextProps.roles.successMsg)
+      this.setState({ succMsg: nextProps.roles.successMsg });
   };
 
   onCloseModal = () => {
@@ -36,29 +36,16 @@ class Delete extends Component {
   onModalSubmit = e => {
     e.preventDefault();
 
-    if (this.props.ids) {
-      const { ids, deleteBulkUser } = this.props;
-      const { users } = this.props.users;
+    const { id, deleteRole } = this.props;
+    const { roles } = this.props.roles;
 
-      this.setState({
-        modalLoading: false,
-        succMsg: ""
-      });
-      // delete user
-      deleteBulkUser(ids, users);
-      this.props.onModalClose();
-    } else if (this.props.id) {
-      const { id, deleteUser } = this.props;
-      const { users } = this.props.users;
-
-      this.setState({
-        modalLoading: false,
-        succMsg: ""
-      });
-      // delete user
-      deleteUser(id, users);
-      this.props.onModalClose();
-    }
+    this.setState({
+      modalLoading: false,
+      succMsg: ""
+    });
+    // delete user
+    deleteRole(id, roles);
+    this.props.onModalClose();
   };
 
   render() {
@@ -88,11 +75,11 @@ class Delete extends Component {
 }
 
 const mapStateToProps = state => ({
-  users: state.users,
+  roles: state.roles,
   errors: state.errors
 });
 
 export default connect(
   mapStateToProps,
-  { deleteUser, deleteBulkUser }
+  { deleteRole }
 )(Delete);
