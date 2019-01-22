@@ -29,6 +29,7 @@ import NotFound from "./components/not-found/NotFound";
 
 import Users from "./components/administration/Users/Index";
 import Roles from "./components/administration/Roles/Index";
+import Permissions from "./components/administration/Permissions/Index";
 
 import "./App.css";
 import _ from "lodash";
@@ -82,6 +83,11 @@ class App extends Component {
                   <PrivateRoute exact path="/dashboard" component={Dashboard} />
                   <PrivateRoute exact path="/users" component={Users} />
                   <PrivateRoute exact path="/roles" component={Roles} />
+                  <PrivateRoute
+                    exact
+                    path="/permissions/:id"
+                    component={Permissions}
+                  />
                 </Switch>
               </div>
             </div>

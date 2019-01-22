@@ -173,14 +173,12 @@ class Users extends Component {
     ) : (
       <div>
         <div className="row">
-          <div className="" style={{ padding: "20px" }}>
-            <h4 style={{ float: "left", color: "#63c2de" }}>
-              <i className="icon-user" style={{ marginRight: "7px" }} />
+          <div className="table-before">
+            <h4>
+              <i className="icon-user" />
               All Users
             </h4>
-            <div
-              style={{ float: "left", marginLeft: "20px", marginTop: "0px" }}
-            >
+            <div className="table-before-button-group">
               <button
                 className="btn btn-sm  btn-outline-success"
                 onClick={this.showAddUserModal}
@@ -188,7 +186,6 @@ class Users extends Component {
                 <i className="fas fa-plus" /> Add User
               </button>
               <button
-                style={{ marginLeft: "7px" }}
                 className="btn btn-sm  btn-outline-danger"
                 id="bulk"
                 onClick={this.showDeleteUserModal}

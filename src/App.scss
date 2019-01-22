@@ -59,3 +59,41 @@ img {
     padding-bottom: 0;
   }
 }
+
+// -------********** TableBefore *******--------
+.table-before {
+  padding: 20px;
+
+  h4 {
+    float: left;
+    color: #63c2de;
+    margin-right: -10px;
+
+    i {
+      margin-right: 7px;
+    }
+  }
+}
+
+.table-before-button-group {
+  float: left;
+  margin-left: 20px;
+  margin-top: 0px;
+
+  button {
+    margin-left: 7px;
+  }
+}
+
+// -------********** Permissions *******--------
+.parentCheckbox {
+  margin-top: 2em;
+}
+.childCheckbox {
+  margin-left: 3em;
+}
+
+.SubmitButtonBlock {
+  margin-top: 3em;
+  margin-left: 3em;
+}

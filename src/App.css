@@ -43,3 +43,29 @@ img {
 
 .modal .modal-body {
   padding-bottom: 0; }
+
+.table-before {
+  padding: 20px; }
+  .table-before h4 {
+    float: left;
+    color: #63c2de;
+    margin-right: -10px; }
+    .table-before h4 i {
+      margin-right: 7px; }
+
+.table-before-button-group {
+  float: left;
+  margin-left: 20px;
+  margin-top: 0px; }
+  .table-before-button-group button {
+    margin-left: 7px; }
+
+.parentCheckbox {
+  margin-top: 2em; }
+
+.childCheckbox {
+  margin-left: 3em; }
+
+.SubmitButtonBlock {
+  margin-top: 3em;
+  margin-left: 3em; }

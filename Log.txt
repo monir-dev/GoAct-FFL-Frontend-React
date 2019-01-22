@@ -11,3 +11,33 @@ scripts setting:
 "start-js": "react-scripts start",
 "start": "npm-run-all -p watch-css start-js",
 "build": "npm run build-css && react-scripts build",
+
+
+
+
+
+
+// Customized Table before block---------
+<div className="row">
+  <div className="table-before">
+    <h4>
+      <i className="icon-user" />
+      All Users
+    </h4>
+    <div className="table-before-button-group">
+      <button
+        className="btn btn-sm  btn-outline-success"
+        onClick={this.showAddUserModal}
+      >
+        <i className="fas fa-plus" /> Add User
+      </button>
+      <button
+        className="btn btn-sm  btn-outline-danger"
+        id="bulk"
+        onClick={this.showDeleteUserModal}
+      >
+        <i class="fas fa-trash-alt" /> Bulk Delete
+      </button>
+    </div>
+  </div>
+</div>

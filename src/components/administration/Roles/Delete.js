@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 
-import { deleteRole } from "../../../actions/RolesAction";
+import { deleteRole, deleteBulkRole } from "../../../actions/RolesAction";
 
 class Delete extends Component {
   constructor() {
@@ -36,15 +36,28 @@ class Delete extends Component {
   onModalSubmit = e => {
     e.preventDefault();
 
-    const { id, deleteRole } = this.props;
-    const { roles } = this.props.roles;
+    if (this.props.ids) {
+      const { ids, deleteBulkRole } = this.props;
+      const { roles } = this.props.roles;
 
-    this.setState({
-      modalLoading: false,
-      succMsg: ""
-    });
-    // delete user
-    deleteRole(id, roles);
+      this.setState({
+        modalLoading: false,
+        succMsg: ""
+      });
+      // delete user
+      deleteBulkRole(ids, roles);
+    } else if (this.props.id) {
+      const { id, deleteRole } = this.props;
+      const { roles } = this.props.roles;
+
+      this.setState({
+        modalLoading: false,
+        succMsg: ""
+      });
+      // delete user
+      deleteRole(id, roles);
+    }
+
     this.props.onModalClose();
   };
 
@@ -81,5 +94,5 @@ const mapStateToProps = state => ({
 
 export default connect(
   mapStateToProps,
-  { deleteRole }
+  { deleteRole, deleteBulkRole }
 )(Delete);

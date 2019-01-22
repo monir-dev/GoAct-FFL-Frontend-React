@@ -85,7 +85,7 @@ export const editRole = (id, data, roles) => dispatch => {
     });
 };
 
-// Delete user
+// Delete role
 export const deleteRole = (id, roles) => dispatch => {
   dispatch(setRolesLoading());
   axios
@@ -100,12 +100,40 @@ export const deleteRole = (id, roles) => dispatch => {
         });
       }
     })
-    .catch(err =>
+    .catch(err => {
+      dispatch(stopRolesModalLoading());
       dispatch({
         type: GET_ERRORS,
-        payload: "Edit failed"
-      })
-    );
+        payload: "Delete failed"
+      });
+    });
+};
+
+// Delete bulk Role
+export const deleteBulkRole = (ids, roles) => dispatch => {
+  dispatch(setRolesLoading());
+  axios
+    .post(`/roles-bulk-delete`, { ids: ids.join() })
+    .then(res => res.data)
+    .then(res => {
+      if (res.status == "success") {
+        let data = roles.filter(item => {
+          let index = ids.indexOf(item.id);
+          return index != -1 ? false : true;
+        });
+        dispatch({
+          type: DELETE_ROLE,
+          payload: data
+        });
+      }
+    })
+    .catch(err => {
+      dispatch(stopRolesModalLoading());
+      dispatch({
+        type: GET_ERRORS,
+        payload: "Delete failed"
+      });
+    });
 };
 
 // Set roles loading
